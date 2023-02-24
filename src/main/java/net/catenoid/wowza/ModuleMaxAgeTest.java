@@ -1,15 +1,10 @@
 package net.catenoid.wowza;
 
 import com.wowza.wms.application.IApplicationInstance;
-import com.wowza.wms.http.IHTTPProvider;
-import com.wowza.wms.http.IHTTPRequest;
-import com.wowza.wms.http.IHTTPResponse;
 import com.wowza.wms.httpstreamer.cupertinostreaming.httpstreamer.HTTPStreamerApplicationContextCupertinoStreamer;
-import com.wowza.wms.httpstreamer.model.IHTTPStreamerRequestContext;
 import com.wowza.wms.httpstreamer.model.IHTTPStreamerSession;
 import com.wowza.wms.module.ModuleBase;
 import com.wowza.wms.stream.IMediaStream;
-import com.wowza.wms.vhost.IVHost;
 
 public class ModuleMaxAgeTest extends ModuleBase {
 
@@ -25,11 +20,11 @@ public class ModuleMaxAgeTest extends ModuleBase {
 	}
 
 	public void onStreamCreate(IMediaStream stream) {
-		getLogger().info("max-age-test2-app-1 ModulePublishOnTextData#PublishThread.run["+stream.getContextStr()+"]: START");
-		getLogger().info("ModulePublishOnTextData#PublishThread.run["+stream.getContextStr()+"]: START");
+		getLogger().info("max-age-test2-app-1 ModulePublishOnTextData#PublishThread.run[" + stream.getContextStr() + "]: START");
+		getLogger().info("ModulePublishOnTextData#PublishThread.run[" + stream.getContextStr() + "]: START");
 		getLogger().info(" ======================== 1 " + appInstance.getHTTPStreamerProperties());
-		appInstance.getLiveStreamPacketizerProperties().setProperty("cupertinoChunkDurationTarget", 5000);	// 5000
-		appInstance.getLiveStreamPacketizerProperties().setProperty("cupertinoPlaylistChunkCount", 4);	// 4
+		appInstance.getLiveStreamPacketizerProperties().setProperty("cupertinoChunkDurationTarget", 5000);    // 5000
+		appInstance.getLiveStreamPacketizerProperties().setProperty("cupertinoPlaylistChunkCount", 4);    // 4
 
 
 		IHTTPStreamerSession httpSession = stream.getHTTPStreamerSession();
@@ -49,34 +44,36 @@ public class ModuleMaxAgeTest extends ModuleBase {
 		}
 
 
-
 //		appInstance.getHTTPStreamerProperties().setProperty("cupertinoCacheControlPlaylist", "max-age=2");		// max-age=2
-		getLogger().info(" ======================== 2 " + appInstance.getHTTPStreamerProperties());
+		getLogger().info(" ======================== 1 " + appInstance.getHTTPStreamerProperties());
 	}
 
 
 	public void onHTTPSessionCreate(IHTTPStreamerSession httpSession) {
-		getLogger().info("max-age-test2-app-2 before onHTTPSessionCreate ======================== 3 " + httpSession.getUserHTTPHeaders().toString());
-//		httpSession.setUserHTTPHeader("Cache-Control", "max-age=2");
+		getLogger().info("max-age-test2-app-2 before onHTTPSessionCreate ======================== 2 " + httpSession.getUserHTTPHeaders().toString());
 
-		httpSession.setUserHTTPHeader("Custom-Cache-Control", "max-age=2");
-		getLogger().info("max-age-test2-app-2 after ======================== 3 " + httpSession.getUserHTTPHeaders().toString());
-	}
+		getLogger().info("max-age-test2-app-2 after ======================== 2 " + httpSession.getUserHTTPHeaders().toString());
 
-	/*
-	public void onHTTPRequest(IVHost ivHost, IHTTPRequest req, IHTTPResponse res) {
 
-		try {
-			getLogger().error("wowza-text-app-demo onHTTPRequest start===================================1");
-			res.setHeader("Cache-Control", "max-age=2");
+		// stream 구분자
+		IMediaStream stream = httpSession.getStream();
+		String streamName = "is null stream";
+		if (stream != null) {
+			streamName = stream.getName();
+		}
+		getLogger().info(String.format("max-age-test2-app-2 Logging '%s' '%s' ", httpSession.getSessionId(), streamName));
 
-			getLogger().info("wowza-text-app-demo-onHTTPRequest ======================== 3 " + res.getHeaders());
-		} catch (Exception e) {
-			getLogger().error("wowza-text-app-demo onHTTPRequest error===================================");
+		switch (streamName) {
+			case "myStream":
+				httpSession.setUserHTTPHeader("Custom-Cache-Control", "max-age=2");
+				break;
+			case "max-age-test":
+				httpSession.setUserHTTPHeader("Custom-Cache-Control", "max-age=3");
+				break;
+			default:
+				httpSession.setUserHTTPHeader("Custom-Cache-Control", "max-age=4");
+				break;
 		}
 	}
-	 */
-
-
-
 }
+
